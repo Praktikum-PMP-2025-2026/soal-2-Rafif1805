@@ -1,0 +1,135 @@
+name: Autograding Tests
+on:
+  - push
+  - workflow_dispatch
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Compile soal2
+        run: gcc -std=c11 -O2 -Wall -Wextra -o soal2 soal2.c
+
+      - name: Test Case 1
+        id: tc1
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "TC1 - semua valid satu blok"
+          setup-command: ""
+          command: bash -c 'out=$(printf "1 abc12 9\n" | ./soal2 | tr -d "\r" | sed "s/[[:space:]]*$//"); [[ "$out" == "VALID" ]]'
+          timeout: 2
+          max-score: 10
+
+      - name: Test Case 2
+        id: tc2
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "TC2 - contoh resmi"
+          setup-command: ""
+          command: bash -c 'out=$(printf "3 abc12 9 z9 44 ae 6\n" | ./soal2 | tr -d "\r" | sed "s/[[:space:]]*$//"); [[ "$out" == "RUSAK 2" ]]'
+          timeout: 2
+          max-score: 10
+
+      - name: Test Case 3
+        id: tc3
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "TC3 - rusak blok pertama"
+          setup-command: ""
+          command: bash -c 'out=$(printf "2 a1 3 b2 4\n" | ./soal2 | tr -d "\r" | sed "s/[[:space:]]*$//"); [[ "$out" == "RUSAK 1" ]]'
+          timeout: 2
+          max-score: 10
+
+      - name: Test Case 4
+        id: tc4
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "TC4 - valid dua blok"
+          setup-command: ""
+          command: bash -c 'out=$(printf "2 az 27 z9 35\n" | ./soal2 | tr -d "\r" | sed "s/[[:space:]]*$//"); [[ "$out" == "VALID" ]]'
+          timeout: 2
+          max-score: 10
+
+      - name: Test Case 5
+        id: tc5
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "TC5 - digit saja valid"
+          setup-command: ""
+          command: bash -c 'out=$(printf "1 909 18\n" | ./soal2 | tr -d "\r" | sed "s/[[:space:]]*$//"); [[ "$out" == "VALID" ]]'
+          timeout: 2
+          max-score: 10
+
+      - name: Test Case 6
+        id: tc6
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "TC6 - huruf saja rusak"
+          setup-command: ""
+          command: bash -c 'out=$(printf "1 stei 57\n" | ./soal2 | tr -d "\r" | sed "s/[[:space:]]*$//"); [[ "$out" == "RUSAK 1" ]]'
+          timeout: 2
+          max-score: 10
+
+      - name: Test Case 7
+        id: tc7
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "TC7 - valid tiga blok"
+          setup-command: ""
+          command: bash -c 'out=$(printf "3 a 1 b 2 c 3\n" | ./soal2 | tr -d "\r" | sed "s/[[:space:]]*$//"); [[ "$out" == "VALID" ]]'
+          timeout: 2
+          max-score: 10
+
+      - name: Test Case 8
+        id: tc8
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "TC8 - rusak blok terakhir"
+          setup-command: ""
+          command: bash -c 'out=$(printf "3 a 1 b 2 c 4\n" | ./soal2 | tr -d "\r" | sed "s/[[:space:]]*$//"); [[ "$out" == "RUSAK 3" ]]'
+          timeout: 2
+          max-score: 10
+
+      - name: Test Case 9
+        id: tc9
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "TC9 - campuran huruf digit valid"
+          setup-command: ""
+          command: bash -c 'out=$(printf "2 itb2026 24 x1y2 28\n" | ./soal2 | tr -d "\r" | sed "s/[[:space:]]*$//"); [[ "$out" == "VALID" ]]'
+          timeout: 2
+          max-score: 10
+
+      - name: Test Case 10
+        id: tc10
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "TC10 - blok tengah rusak"
+          setup-command: ""
+          command: bash -c 'out=$(printf "4 aa 2 bb 5 cc 6 dd 8\n" | ./soal2 | tr -d "\r" | sed "s/[[:space:]]*$//"); [[ "$out" == "RUSAK 2" ]]'
+          timeout: 2
+          max-score: 10
+
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          TC1_RESULTS: "${{steps.tc1.outputs.result}}"
+          TC2_RESULTS: "${{steps.tc2.outputs.result}}"
+          TC3_RESULTS: "${{steps.tc3.outputs.result}}"
+          TC4_RESULTS: "${{steps.tc4.outputs.result}}"
+          TC5_RESULTS: "${{steps.tc5.outputs.result}}"
+          TC6_RESULTS: "${{steps.tc6.outputs.result}}"
+          TC7_RESULTS: "${{steps.tc7.outputs.result}}"
+          TC8_RESULTS: "${{steps.tc8.outputs.result}}"
+          TC9_RESULTS: "${{steps.tc9.outputs.result}}"
+          TC10_RESULTS: "${{steps.tc10.outputs.result}}"
+        with:
+          runners: tc1,tc2,tc3,tc4,tc5,tc6,tc7,tc8,tc9,tc10
